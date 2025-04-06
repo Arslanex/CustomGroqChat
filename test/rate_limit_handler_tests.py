@@ -151,13 +151,13 @@ class TestRateLimitHandler(unittest.TestCase):
             "tokens_per_day": -1
         }
         handler = RateLimitHandler(unlimited_config)
-
+        
         # Set very high counter values
         handler.req_minute_counter = 10000
         handler.req_day_counter = 100000
         handler.tokens_minute_counter = 1000000
         handler.tokens_day_counter = 10000000
-
+        
         # Test that request can still be made
         can_make, reasons = handler.can_make_request(1000000)
         self.assertTrue(can_make)
@@ -171,13 +171,13 @@ class TestRateLimitHandler(unittest.TestCase):
         self.handler.tokens_minute_counter = 3000
         initial_time = 1000.0
         self.handler._last_minute_reset = initial_time
-
+        
         # Test when less than a minute has passed
         mock_time.return_value = initial_time + 30  # 30 seconds later
         self.handler._reset_minute_counters()
         self.assertEqual(self.handler.req_minute_counter, 30)
         self.assertEqual(self.handler.tokens_minute_counter, 3000)
-
+        
         # Test when more than a minute has passed
         mock_time.return_value = initial_time + 61  # 61 seconds later
         self.handler._reset_minute_counters()
@@ -193,13 +193,13 @@ class TestRateLimitHandler(unittest.TestCase):
         self.handler.tokens_day_counter = 50000
         initial_time = 1000.0
         self.handler._last_day_reset = initial_time
-
+        
         # Test when less than a day has passed
         mock_time.return_value = initial_time + 3600  # 1 hour later
         self.handler._reset_day_counters()
         self.assertEqual(self.handler.req_day_counter, 500)
         self.assertEqual(self.handler.tokens_day_counter, 50000)
-
+        
         # Test when more than a day has passed
         mock_time.return_value = initial_time + 86401  # 24 hours + 1 second later
         self.handler._reset_day_counters()
@@ -214,14 +214,14 @@ class TestRateLimitHandler(unittest.TestCase):
         self.assertEqual(self.handler.tokens_day_counter, 0)
         self.assertEqual(self.handler.req_minute_counter, 0)
         self.assertEqual(self.handler.req_day_counter, 0)
-
+        
         # Update counters
         self.handler.update_counters(100)
         self.assertEqual(self.handler.tokens_minute_counter, 100)
         self.assertEqual(self.handler.tokens_day_counter, 100)
         self.assertEqual(self.handler.req_minute_counter, 1)
         self.assertEqual(self.handler.req_day_counter, 1)
-
+        
         # Update again
         self.handler.update_counters(200)
         self.assertEqual(self.handler.tokens_minute_counter, 300)
@@ -244,10 +244,10 @@ class TestRateLimitHandler(unittest.TestCase):
         """Test check_request when minute request limit is exceeded."""
         # Set up the handler to exceed the minute request limit
         self.handler.req_minute_counter = self.handler.req_per_min
-
+        
         with self.assertRaises(RateLimitExceededException) as context:
             self.handler.check_request(100, strictly=True)
-
+        
         exception = context.exception
         self.assertEqual(exception.limit_type, "request")
         self.assertEqual(exception.time_period, "minute")
@@ -258,10 +258,10 @@ class TestRateLimitHandler(unittest.TestCase):
         """Test check_request when minute token limit is exceeded."""
         # Set up the handler to exceed the minute token limit
         self.handler.tokens_minute_counter = self.handler.tokens_per_min - 50
-
+        
         with self.assertRaises(RateLimitExceededException) as context:
             self.handler.check_request(100, strictly=True)
-
+        
         exception = context.exception
         self.assertEqual(exception.limit_type, "token")
         self.assertEqual(exception.time_period, "minute")
@@ -272,10 +272,10 @@ class TestRateLimitHandler(unittest.TestCase):
         """Test check_request when day request limit is exceeded."""
         # Set up the handler to exceed the day request limit
         self.handler.req_day_counter = self.handler.req_per_day
-
+        
         with self.assertRaises(RateLimitExceededException) as context:
             self.handler.check_request(100, strictly=True)
-
+        
         exception = context.exception
         self.assertEqual(exception.limit_type, "request")
         self.assertEqual(exception.time_period, "day")
@@ -286,10 +286,10 @@ class TestRateLimitHandler(unittest.TestCase):
         """Test check_request when day token limit is exceeded."""
         # Set up the handler to exceed the day token limit
         self.handler.tokens_day_counter = self.handler.tokens_per_day - 50
-
+        
         with self.assertRaises(RateLimitExceededException) as context:
             self.handler.check_request(100, strictly=True)
-
+        
         exception = context.exception
         self.assertEqual(exception.limit_type, "token")
         self.assertEqual(exception.time_period, "day")
@@ -303,23 +303,23 @@ class TestRateLimitHandler(unittest.TestCase):
         self.handler.req_day_counter = 100
         self.handler.tokens_minute_counter = 1000
         self.handler.tokens_day_counter = 10000
-
+        
         # Get status
         status = self.handler.get_status()
-
+        
         # Verify status
         self.assertEqual(status["requests"]["minute"]["current"], 10)
         self.assertEqual(status["requests"]["minute"]["limit"], 60)
         self.assertEqual(status["requests"]["minute"]["display"], "10/60")
-
+        
         self.assertEqual(status["requests"]["day"]["current"], 100)
         self.assertEqual(status["requests"]["day"]["limit"], 1000)
         self.assertEqual(status["requests"]["day"]["display"], "100/1000")
-
+        
         self.assertEqual(status["tokens"]["minute"]["current"], 1000)
         self.assertEqual(status["tokens"]["minute"]["limit"], 6000)
         self.assertEqual(status["tokens"]["minute"]["display"], "1000/6000")
-
+        
         self.assertEqual(status["tokens"]["day"]["current"], 10000)
         self.assertEqual(status["tokens"]["day"]["limit"], 250000)
         self.assertEqual(status["tokens"]["day"]["display"], "10000/250000")
@@ -338,23 +338,23 @@ class TestRateLimitHandler(unittest.TestCase):
         handler.req_day_counter = 100
         handler.tokens_minute_counter = 1000
         handler.tokens_day_counter = 10000
-
+        
         # Get status
         status = handler.get_status()
-
+        
         # Verify status
         self.assertEqual(status["requests"]["minute"]["current"], 10)
         self.assertEqual(status["requests"]["minute"]["limit"], "Unlimited")
         self.assertEqual(status["requests"]["minute"]["display"], "10/Unlimited")
-
+        
         self.assertEqual(status["requests"]["day"]["current"], 100)
         self.assertEqual(status["requests"]["day"]["limit"], "Unlimited")
         self.assertEqual(status["requests"]["day"]["display"], "100/Unlimited")
-
+        
         self.assertEqual(status["tokens"]["minute"]["current"], 1000)
         self.assertEqual(status["tokens"]["minute"]["limit"], "Unlimited")
         self.assertEqual(status["tokens"]["minute"]["display"], "1000/Unlimited")
-
+        
         self.assertEqual(status["tokens"]["day"]["current"], 10000)
         self.assertEqual(status["tokens"]["day"]["limit"], "Unlimited")
         self.assertEqual(status["tokens"]["day"]["display"], "10000/Unlimited")
@@ -365,7 +365,7 @@ class TestRateLimitHandler(unittest.TestCase):
         # Setup time
         initial_time = 1000.0
         mock_time.return_value = initial_time
-
+        
         # Create handler with limited config
         config = {
             "req_per_min": 5,
@@ -374,45 +374,45 @@ class TestRateLimitHandler(unittest.TestCase):
             "tokens_per_day": 1000
         }
         handler = RateLimitHandler(config)
-
+        
         # Make requests until we hit the minute request limit
         for i in range(5):
             can_make, reasons = handler.can_make_request(50)
             self.assertTrue(can_make)
             handler.update_counters(50)
-
+        
         # Next request should fail due to minute request limit
         can_make, reasons = handler.can_make_request(50)
         self.assertFalse(can_make)
         self.assertIn("Rate limit exceeded - Minute Request Limit", reasons)
-
+        
         # Advance time past 1 minute
         mock_time.return_value = initial_time + 61
-
+        
         # Minute counters should reset, so we can make more requests
         can_make, reasons = handler.can_make_request(50)
         self.assertTrue(can_make)
         handler.update_counters(50)
-
+        
         # But we're still limited by day counters
         # Make more requests until we hit the day request limit
         for i in range(4):
             can_make, reasons = handler.can_make_request(50)
             self.assertTrue(can_make)
             handler.update_counters(50)
-
+        
         # Next request should fail due to day request limit
         can_make, reasons = handler.can_make_request(50)
         self.assertFalse(can_make)
         self.assertIn("Rate limit exceeded - Daily Request Limit", reasons)
-
+        
         # Advance time past 1 day
         mock_time.return_value = initial_time + 86401
-
+        
         # Day counters should reset, so we can make more requests
         can_make, reasons = handler.can_make_request(50)
         self.assertTrue(can_make)
-
+        
         # Check status
         status = handler.get_status()
         self.assertEqual(status["requests"]["minute"]["current"], 0)
