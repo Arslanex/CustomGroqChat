@@ -117,3 +117,44 @@ class RateLimitExceededException(CustomGroqChatException):
         })
 
         return error_dict                                                                                               # Return the complete dictionary representation"""
+
+class APICallException(CustomGroqChatException):
+    """Exception raised for errors during API calls."""
+
+    ERROR_CODE = "API_CALL_ERROR"                                                                                       # Error code for API call errors
+
+    def __init__(self,
+                 message: str,
+                 status_code: Optional[int] = None,
+                 reponse_body: Optional[Dict[str, Any]] = None,
+                 ) -> None:
+        """
+        Initialize the exception with a message.
+
+        Args:
+            - message (str): The error message.
+            - status_code (Optional[int]): The HTTP status code associated with the error.
+            - response_body (Optional[Dict[str, Any]]): The response body associated with the error.
+        """
+
+        error_code = f'{self.ERROR_CODE}_{status_code}' if status_code else self.ERROR_CODE                             # Generate error code based on status code
+        super().__init__(message, error_code=error_code)                                                                # Call the base class constructor with the message and error code
+        self.status_code = status_code                                                                                  # Store the HTTP status code
+        self.response_body = reponse_body                                                                               # Store the response body
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the exception to a dictionary representation.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the message, error code, and API call details.
+        """
+        error_dict = super().to_dict()                                                                                  # Get the base dictionary representation
+
+        if self.status_code:                                                                                            # If a status code is provided
+            error_dict["status_code"] = self.status_code                                                                # Add the status code to the dictionary
+
+        if self.response_body:                                                                                          # If a response body is provided
+            error_dict["response_body"] = self.response_body                                                            # Add the response body to the dictionary
+
+        return error_dict                                                                                               # Return the complete dictionary representation
