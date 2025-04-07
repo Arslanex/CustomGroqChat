@@ -11,6 +11,24 @@ from typing import Dict, Any, List, Union, Optional
 DEFAULT_ENCODING = "cl100k_base"
 
 
+def get_encoding_for_model(model_name: str) -> tiktoken.Encoding:
+    """
+    Get the encoding for a model.
+    
+    Args:
+        model_name: Name of the model
+        
+    Returns:
+        tiktoken.Encoding: The encoding for the model
+    """
+    try:
+        # For OpenAI and compatible APIs
+        return tiktoken.encoding_for_model(model_name)
+    except KeyError:
+        # Fall back to default encoding if model not found
+        return tiktoken.get_encoding(DEFAULT_ENCODING)
+
+
 def count_tokens_in_message(message: Dict[str, str], encoding: tiktoken.Encoding) -> int:
     """
     Count tokens in a single message.
@@ -57,7 +75,7 @@ def count_tokens_in_messages(messages: List[Dict[str, str]], model_name: str) ->
     if not messages:
         return 0
 
-    encoding = DEFAULT_ENCODING
+    encoding = get_encoding_for_model(model_name)
     token_count = 0
 
     # Add tokens for each message
@@ -82,7 +100,7 @@ def count_tokens_in_prompt(prompt: str, model_name: str) -> int:
     Returns:
         Number of tokens in the prompt
     """
-    encoding = DEFAULT_ENCODING
+    encoding = get_encoding_for_model(model_name)
     return len(encoding.encode(prompt))
 
 
