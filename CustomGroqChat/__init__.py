@@ -17,7 +17,7 @@ Basic usage:
         
         # Chat completion
         response = await client.chat_completion(
-            model_name="llama3-8b-preview",
+            model_name="llama-3.1-8b-instant",
             messages=[{"role": "user", "content": "Tell me a joke"}]
         )
         print(response["choices"][0]["message"]["content"])

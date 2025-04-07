@@ -128,7 +128,7 @@ Create a `config.json` file in your project directory:
 {
   "llama-3.1-8b-instant": {
     "base_url": "https://api.groq.com/openai/v1",
-    "api_key": "gsk_YOUR_GROQ_API_KEY",
+    "api_key": "YOUR_GROQ_API_KEY",
     "req_per_minute": 30,
     "req_per_day": 1200,
     "token_per_minute": 7500,
@@ -137,7 +137,7 @@ Create a `config.json` file in your project directory:
   },
   "llama-3.1-70b-instant": {
     "base_url": "https://api.groq.com/openai/v1",
-    "api_key": "gsk_YOUR_GROQ_API_KEY",
+    "api_key": "YOUR_GROQ_API_KEY",
     "req_per_minute": 15,
     "req_per_day": 600,
     "token_per_minute": 3750,
