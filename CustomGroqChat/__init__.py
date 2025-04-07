@@ -84,3 +84,5 @@ __all__ = [
     'ModelNotFoundException',
     'TokenLimitExceededException',
 ]
+
+__version__ = "0.1.0"
