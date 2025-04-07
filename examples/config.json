@@ -1,0 +1,20 @@
+{
+  "gemma2-9b-it": {
+    "base_url": "https://api.groq.com/openai/v1",
+    "api_key": "YOUR_API_KEY",
+    "req_per_minute": 10,
+    "req_per_day": 700,
+    "token_per_minute": 4500,
+    "token_per_day": 200000,
+    "context_window": 32768
+  },
+  "llama-3.1-8b-instant": {
+    "base_url": "https://api.groq.com/openai/v1",
+    "api_key": "YOUR_API_KEY",
+    "req_per_minute": 30,
+    "req_per_day": 1200,
+    "token_per_minute": 7500,
+    "token_per_day": 300000,
+    "context_window": 8192
+  }
+} 
