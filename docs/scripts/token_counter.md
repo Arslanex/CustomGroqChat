@@ -2,14 +2,16 @@
 
 ## Overview
 
-The `token_counter` module provides utilities for accurately counting tokens in requests to the Groq Cloud API. Token counting is essential for:
+The `token_counter.py` module provides utilities for accurately counting tokens in requests to the Groq Cloud API. This module is used by the [`RequestHandler`](request_handler.md) to validate token limits and by the [`RateLimitHandler`](rate_limit_handler.md) to track token usage.
+
+Token counting is essential for:
 
 1. Managing rate limits and usage quotas
 2. Ensuring requests don't exceed model context windows
 3. Estimating costs of API calls
 4. Optimizing prompts for efficiency
 
-The module uses the `tiktoken` library for token counting and provides functions for different types of requests (chat and completion).
+The module uses the `tiktoken` library for token counting and provides functions for different types of requests (chat and completion). These functions are also exported directly by the package - see [Package Exports](package_exports.md) for details.
 
 ## Token Counting Concepts
 
@@ -56,8 +58,8 @@ def count_tokens_in_messages(messages: List[Dict[str, str]], model_name: str) ->
 Counts tokens in a list of chat messages.
 
 **Parameters:**
-- `messages` (List[Dict[str, str]]): List of message dictionaries
-- `model_name` (str): Name of the model to use for token counting
+- `messages` (List[Dict[str, str]]): List of message dictionaries with 'role' and 'content' keys
+- `model_name` (str): Name of the model to use for token counting (e.g., "llama-3.1-8b-instant")
 
 **Returns:**
 - `int`: Total number of tokens in the messages
@@ -68,7 +70,7 @@ messages = [
     {"role": "system", "content": "You are a helpful assistant."},
     {"role": "user", "content": "Tell me about token counting."}
 ]
-token_count = count_tokens_in_messages(messages, "llama3-70b-8192")
+token_count = count_tokens_in_messages(messages, "llama-3.1-8b-instant")
 ```
 
 ### Count Tokens in Prompt
@@ -80,8 +82,8 @@ def count_tokens_in_prompt(prompt: str, model_name: str) -> int
 Counts tokens in a text prompt.
 
 **Parameters:**
-- `prompt` (str): Text prompt
-- `model_name` (str): Name of the model to use for token counting
+- `prompt` (str): Text prompt string
+- `model_name` (str): Name of the model to use for token counting (e.g., "llama-3.1-8b-instant")
 
 **Returns:**
 - `int`: Number of tokens in the prompt
@@ -89,7 +91,7 @@ Counts tokens in a text prompt.
 **Example:**
 ```python
 prompt = "Generate a story about a token counter."
-token_count = count_tokens_in_prompt(prompt, "llama3-70b-8192")
+token_count = count_tokens_in_prompt(prompt, "llama-3.1-8b-instant")
 ```
 
 ### Count Tokens in Request
@@ -98,11 +100,11 @@ token_count = count_tokens_in_prompt(prompt, "llama3-70b-8192")
 def count_tokens_in_request(request_data: Dict[str, Any], model_name: str) -> int
 ```
 
-Counts tokens in a complete request.
+Counts tokens in a complete request payload.
 
 **Parameters:**
-- `request_data` (Dict[str, Any]): Request data dictionary
-- `model_name` (str): Name of the model
+- `request_data` (Dict[str, Any]): Request data dictionary containing either 'messages' or 'prompt'
+- `model_name` (str): Name of the model to use for token counting
 
 **Returns:**
 - `int`: Total number of tokens in the request
@@ -110,12 +112,12 @@ Counts tokens in a complete request.
 **Example:**
 ```python
 request_data = {
-    "model": "llama3-70b-8192",
+    "model": "llama-3.1-8b-instant",
     "messages": [
         {"role": "user", "content": "Tell me about token counting."}
     ]
 }
-token_count = count_tokens_in_request(request_data, "llama3-70b-8192")
+token_count = count_tokens_in_request(request_data, "llama-3.1-8b-instant")
 ```
 
 ### Estimate Completion Tokens
@@ -127,7 +129,7 @@ def estimate_completion_tokens(request_data: Dict[str, Any], default_tokens: int
 Estimates the number of tokens in the completion based on request parameters.
 
 **Parameters:**
-- `request_data` (Dict[str, Any]): Request data dictionary
+- `request_data` (Dict[str, Any]): Request data dictionary that may contain 'max_tokens'
 - `default_tokens` (int, optional): Default value if no max_tokens is specified. Defaults to 100.
 
 **Returns:**
@@ -136,7 +138,7 @@ Estimates the number of tokens in the completion based on request parameters.
 **Example:**
 ```python
 request_data = {
-    "model": "llama3-70b-8192",
+    "model": "llama-3.1-8b-instant",
     "messages": [...],
     "max_tokens": 200
 }
@@ -152,20 +154,20 @@ def count_request_and_completion_tokens(request_data: Dict[str, Any], model_name
 Counts tokens for both the request and the estimated completion.
 
 **Parameters:**
-- `request_data` (Dict[str, Any]): Request data dictionary
-- `model_name` (str): Name of the model
+- `request_data` (Dict[str, Any]): Request data dictionary containing message or prompt data
+- `model_name` (str): Name of the model to use for token counting
 
 **Returns:**
-- `Dict[str, int]`: Dictionary with prompt_tokens, completion_tokens, and total_tokens counts
+- `Dict[str, int]`: Dictionary with 'prompt_tokens', 'completion_tokens', and 'total_tokens' counts
 
 **Example:**
 ```python
 request_data = {
-    "model": "llama3-70b-8192",
+    "model": "llama-3.1-8b-instant",
     "messages": [...],
     "max_tokens": 200
 }
-token_counts = count_request_and_completion_tokens(request_data, "llama3-70b-8192")
+token_counts = count_request_and_completion_tokens(request_data, "llama-3.1-8b-instant")
 print(f"Prompt tokens: {token_counts['prompt_tokens']}")
 print(f"Completion tokens: {token_counts['completion_tokens']}")
 print(f"Total tokens: {token_counts['total_tokens']}")
@@ -176,7 +178,7 @@ print(f"Total tokens: {token_counts['total_tokens']}")
 The token counter can be used from the command line:
 
 ```
-python -m CutomGroqChat.token_counter [command] [arguments]
+python -m CustomGroqChat.token_counter [command] [arguments]
 ```
 
 ### Commands
@@ -186,7 +188,7 @@ python -m CutomGroqChat.token_counter [command] [arguments]
 Count tokens in a text prompt:
 
 ```
-python -m CutomGroqChat.token_counter text "Your text here" --model llama3-70b-8192
+python -m CustomGroqChat.token_counter text "Your text here" --model llama-3.1-8b-instant
 ```
 
 #### Chat
@@ -194,62 +196,14 @@ python -m CutomGroqChat.token_counter text "Your text here" --model llama3-70b-8
 Count tokens in a chat conversation from a JSON file:
 
 ```
-python -m CutomGroqChat.token_counter chat --file chat_messages.json --model llama3-70b-8192
+python -m CustomGroqChat.token_counter chat --file chat_messages.json --model llama-3.1-8b-instant
 ```
 
 The JSON file should contain an array of message objects.
 
-#### Request
+## Related Documentation
 
-Count tokens in a complete request file:
-
-```
-python -m CutomGroqChat.token_counter request request_data.json --model llama3-70b-8192
-```
-
-The JSON file should contain a complete API request.
-
-## Implementation Notes
-
-### Default Encoding
-
-The module uses `cl100k_base` as the default encoding, which is compatible with most modern LLMs including those used by Groq Cloud.
-
-### Token Counting Approximations
-
-The module makes some approximations:
-- 4 tokens per message for formatting (role tokens, etc.)
-- 3 tokens for overall formatting in a chat request
-- 10 tokens for unknown request formats
-
-### Function Call Handling
-
-The module properly accounts for tokens in function calls by:
-1. Converting the function call to a JSON string
-2. Counting tokens in the JSON string
-3. Adding those tokens to the total
-
-## Integration with Rate Limiting
-
-This token counter integrates well with the rate limit handler:
-
-```python
-from CutomGroqChat.token_counter import count_request_and_completion_tokens
-from CutomGroqChat.rate_limit_handler import RateLimitHandler
-
-# Initialize rate limit handler
-rate_limit_handler = RateLimitHandler(config)
-
-# Count tokens in a request
-request_data = {...}
-token_counts = count_request_and_completion_tokens(request_data, "llama3-70b-8192")
-total_tokens = token_counts["total_tokens"]
-
-# Check rate limits
-can_make_request, reasons = rate_limit_handler.can_make_request(total_tokens)
-if can_make_request:
-    # Make the API request
-    pass
-else:
-    print(f"Cannot make request: {reasons}")
-``` 
+- [RequestHandler](request_handler.md) - Uses the token counter to validate requests
+- [RateLimitHandler](rate_limit_handler.md) - Uses the token counter to track usage
+- [Package Exports](package_exports.md) - Information about token counting functions in the public API
+- [Advanced Usage Guide](../usage%20guide/advanced_usage.md#token-counting-and-budget-management) - Guide to token counting in applications 
