@@ -38,7 +38,6 @@ class CustomGroqChatException(Exception):
             "error_type": self.__class__.__name__                                                                       # Include the type of the exception
         }
 
-
 class ConfigLoaderException(CustomGroqChatException):
     """Exception raised for errors in the configuration loading process."""
 
@@ -69,7 +68,6 @@ class ConfigLoaderException(CustomGroqChatException):
             error_dict["config_key"] = self.config_key                                                                  # Add the configuration key to the dictionary
 
         return error_dict                                                                                               # Return the complete dictionary representation
-
 
 class RateLimitExceededException(CustomGroqChatException):
     """Exception raised when the rate limit is exceeded."""
@@ -156,5 +154,71 @@ class APICallException(CustomGroqChatException):
 
         if self.response_body:                                                                                          # If a response body is provided
             error_dict["response_body"] = self.response_body                                                            # Add the response body to the dictionary
+
+        return error_dict                                                                                               # Return the complete dictionary representation
+
+class ModelNotFoundException(CustomGroqChatException):
+    """Exception raised when a model is not found."""
+
+    ERROR_CODE = "MODEL_NOT_FOUND"                                                                                     # Error code for model not found errors
+
+    def __init__(self, message: str, model_name: Optional[str] = None) -> None:
+        """
+        Initialize the exception with a message and optional model name.
+
+        Args:
+            message (str): The error message.
+            model_name (Optional[str]): The name of the model that was not found.
+        """
+        super().__init__(message, error_code=self.ERROR_CODE)                                                           # Call the base class constructor with the message and error code
+        self.model_name = model_name                                                                                    # Store the name of the model
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the exception to a dictionary representation
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the message, error code, and API call details.
+        """
+
+        error_dict = self.to_dict()
+
+        if self.model_name:                                                                                             # If a model name is provided
+            error_dict["model_name"] = self.model_name                                                                  # Add the model name to the dictionary
+
+        return error_dict
+
+class TokenLimitExceededException(CustomGroqChatException):
+    """Exception raised when the token limit is exceeded."""
+
+    ERROR_CODE = "TOKEN_LIMIT_EXCEEDED"                                                                                # Error code for token limit exceeded errors
+
+    def __init__(self, message: str, token_count: int, token_limit: int, model_name:str) -> None:
+        """
+        Initialize the exception with a message and token limit.
+
+        Args:
+            message (str): The error message.
+            token_limit (int): The maximum token limit.
+        """
+        super().__init__(message, error_code=self.ERROR_CODE)                                                           # Call the base class constructor with the message and error code
+        self.token_count = token_count                                                                                  # Store the current token count
+        self.token_limit = token_limit                                                                                  # Store the maximum token limit
+        self.model_name = model_name                                                                                    # Store the name of the model
+
+    def to_dict(self) -> Dict[str, Any]:
+        """
+        Convert the exception to a dictionary representation.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing the message, error code, and API call details.
+        """
+        error_dict = super().to_dict()                                                                                  # Get the base dictionary representation
+
+        error_dict.update({                                                                                             # Update the dictionary with token limit details
+            "token_count": self.token_count,                                                                            # Include the current token count in the dictionary
+            "token_limit": self.token_limit,                                                                            # Include the maximum token limit in the dictionary
+            "model_name": self.model_name                                                                               # Include the name of the model in the dictionary
+        })
 
         return error_dict                                                                                               # Return the complete dictionary representation
