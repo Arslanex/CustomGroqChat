@@ -147,12 +147,6 @@ Create a `config.json` file in your project directory:
 }
 ```
 
-Or set the environment variable:
-
-```bash
-export GROQ_API_KEY=your-groq-api-key
-```
-
 ### Basic Chat
 
 ```python
